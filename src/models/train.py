@@ -15,6 +15,11 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from xgboost import XGBClassifier
+from sklearn.model_selection import StratifiedKFold, cross_validate
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import GridSearchCV
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import StratifiedKFold, GridSearchCV
 from src.config import PROCESSED_DATA_DIR
 
 
@@ -342,6 +347,105 @@ def evaluate_xgboost(model, X_test, y_test):
         )
     )
 
+def cross_validate_logistic_regression(X_train, y_train):
+    """Perform 5-fold cross-validation for Logistic Regression."""
+
+    pipeline = Pipeline([
+        ("scaler", StandardScaler()),
+        (
+            "model",
+            LogisticRegression(
+                max_iter=1000,
+                random_state=42
+            )
+        )
+    ])
+
+    cv = StratifiedKFold(
+        n_splits=5,
+        shuffle=True,
+        random_state=42
+    )
+
+    scoring = {
+        "accuracy": "accuracy",
+        "precision": "precision",
+        "recall": "recall",
+        "f1": "f1",
+        "roc_auc": "roc_auc",
+        "pr_auc": "average_precision"
+    }
+
+    results = cross_validate(
+        pipeline,
+        X_train,
+        y_train,
+        cv=cv,
+        scoring=scoring,
+        n_jobs=-1
+    )
+
+    print("\n========== 5-FOLD CROSS-VALIDATION ==========")
+
+    for metric in scoring:
+        scores = results[f"test_{metric}"]
+
+        print(
+            f"{metric.upper():<10}: "
+            f"{scores.mean():.4f} "
+            f"+/- {scores.std():.4f}"
+        )
+
+def tune_random_forest(X_train, y_train):
+    """Tune Random Forest using 5-fold cross-validation."""
+
+    model = RandomForestClassifier(
+        random_state=42,
+        n_jobs=-1
+    )
+
+    param_grid = {
+        "n_estimators": [200, 300],
+        "max_depth": [5, 8, 12],
+        "min_samples_split": [10, 20],
+        "min_samples_leaf": [5, 10]
+    }
+
+    cv = StratifiedKFold(
+        n_splits=5,
+        shuffle=True,
+        random_state=42
+    )
+
+    grid_search = GridSearchCV(
+        estimator=model,
+        param_grid=param_grid,
+        scoring="average_precision",
+        cv=cv,
+        n_jobs=-1,
+        verbose=1
+    )
+
+    print("\nStarting Random Forest hyperparameter tuning...")
+    print("Scoring metric: PR-AUC")
+    print("Cross-validation folds: 5")
+
+    grid_search.fit(X_train, y_train)
+
+    print("\n" + "=" * 60)
+    print("RANDOM FOREST TUNING RESULTS")
+    print("=" * 60)
+
+    print("\nBest parameters:")
+    print(grid_search.best_params_)
+
+    print(
+        f"\nBest CV PR-AUC: "
+        f"{grid_search.best_score_:.4f}"
+    )
+
+    return grid_search.best_estimator_, grid_search.best_params_
+
 def main():
 
     print("Loading ML datasets...")
@@ -413,6 +517,24 @@ def main():
 
     evaluate_xgboost(
         xgb_model,
+        X_test,
+        y_test
+    )
+
+    cross_validate_logistic_regression(
+        X_train,
+        y_train
+    )
+
+    tuned_rf = tune_random_forest(
+        X_train,
+        y_train
+    )
+
+    print("\nEvaluating tuned Random Forest...")
+
+    evaluate_random_forest(
+        tuned_rf,
         X_test,
         y_test
     )

@@ -21,11 +21,12 @@ def prepare_features(df):
 
     # Columns that should NOT be used as model features
     columns_to_drop = [
-        "customer_id",
-        "signup_date",
-        "last_order_date",
-        "churn"
-    ]
+    "customer_id",
+    "signup_date",
+    "last_order_date",
+    "tenure_months",
+    "churn"
+]
 
     X = df.drop(columns=columns_to_drop)
 
