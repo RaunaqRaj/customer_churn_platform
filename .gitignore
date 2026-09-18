@@ -25,3 +25,8 @@ models/*.joblib
 # OS files
 .DS_Store
 Thumbs.db
+
+# MLflow local tracking
+mlartifacts/
+mlflow.db
+mlruns/

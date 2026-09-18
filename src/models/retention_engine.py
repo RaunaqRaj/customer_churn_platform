@@ -1,10 +1,10 @@
 import pandas as pd
-import joblib
 import shap
+import mlflow.sklearn
 
 from sklearn.model_selection import train_test_split
 
-from src.config import PROCESSED_DATA_DIR, MODEL_DIR
+from src.config import PROCESSED_DATA_DIR
 
 def get_test_customer_mapping():
     """
@@ -56,17 +56,20 @@ def get_test_customer_mapping():
 
 def load_model():
     """
-    Load the previously trained churn model.
+    Load the registered churn model from MLflow Model Registry.
     """
 
-    model_path = MODEL_DIR / "churn_model.pkl"
+    mlflow.set_tracking_uri(
+        "http://127.0.0.1:5000"
+    )
 
-    if not model_path.exists():
-        raise FileNotFoundError(
-            f"Model not found at: {model_path}"
-        )
+    model_uri = (
+        "models:/customer-churn-random-forest/1"
+    )
 
-    model = joblib.load(model_path)
+    model = mlflow.sklearn.load_model(
+        model_uri
+    )
 
     return model
 
