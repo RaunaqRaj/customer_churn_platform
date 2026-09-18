@@ -95,3 +95,46 @@ This project builds a complete churn analytics pipeline that:
         │    Power BI      │
         │    Dashboard     │
         └──────────────────┘
+
+## 📊 Power BI Dashboard
+
+The project includes an interactive Power BI dashboard for monitoring customer churn risk and retention insights.
+
+### Dashboard Highlights
+
+- Total customers
+- High-risk customers
+- Medium-risk customers
+- Low-risk customers
+- Customer risk distribution
+- Churn probability distribution
+- Risk distribution by plan
+- Top risk factors
+- Revenue by risk level
+- Average recorded satisfaction by risk level
+- Customer-level retention actions
+
+### Interactive Filters
+
+- Plan Type
+- Risk Level
+- City
+
+![Customer Churn & Retention Dashboard](docs/images/powerbi-dashboard.png)
+
+## 🚀 FastAPI API
+
+The trained churn model is exposed through a FastAPI REST API.
+
+### API Endpoints
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/health` | Check API health |
+| GET | `/customer/{customer_id}` | Get churn prediction and retention recommendation |
+
+### Swagger API Documentation
+
+FastAPI provides interactive API documentation through Swagger UI.
+
+![FastAPI Swagger API](docs/images/fastapi-swagger.png)
